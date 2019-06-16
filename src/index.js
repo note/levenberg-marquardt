@@ -27,7 +27,8 @@ export default function levenbergMarquardt(
     errorTolerance = 10e-3,
     minValues,
     maxValues,
-    initialValues
+    initialValues,
+    alignToData = false
   } = options;
 
   if (damping <= 0) {
@@ -46,6 +47,9 @@ export default function levenbergMarquardt(
   } else if (data.x.length !== data.y.length) {
     throw new Error('The data parameter elements must have the same size');
   }
+
+  const dataMin = Math.min.apply(null, data.y);
+  const dataMax = Math.max.apply(null, data.y);
 
   var parameters =
     initialValues || new Array(parameterizedFunction.length).fill(1);
@@ -70,12 +74,20 @@ export default function levenbergMarquardt(
     iteration < maxIterations && !converged;
     iteration++
   ) {
+    // change: data.x.map()
+    let alignedFun = parameterizedFunction;
+    if (alignToData) {
+      const toAlign = data.x.map(x => parameterizedFunction(parameters)(x));
+      alignedFun = alignedFunction(parameterizedFunction, dataMin, dataMax, toAlign);  
+    }
+    
+
     parameters = step(
       data,
       parameters,
       damping,
       gradientDifference,
-      parameterizedFunction
+      alignedFun
     );
 
     for (let k = 0; k < parLen; k++) {
@@ -85,7 +97,7 @@ export default function levenbergMarquardt(
       );
     }
 
-    error = errorCalculation(data, parameters, parameterizedFunction);
+    error = errorCalculation(data, parameters, alignedFun);
     if (isNaN(error)) break;
     converged = error <= errorTolerance;
   }
@@ -96,3 +108,49 @@ export default function levenbergMarquardt(
     iterations: iteration
   };
 }
+
+function alignedFunction(f, dataMin, dataMax, toAlign) {
+  const funMin = Math.min.apply(null, toAlign);
+  const funMax = Math.max.apply(null, toAlign);
+
+  const params = getLinearParams(dataMin, dataMax, funMin, funMax);
+
+  const res = (paramsToFit) => (x) => {
+    const originalRes = f(paramsToFit)(x);
+    return params[0] * originalRes + params[1];
+  }
+
+  return res;
+}
+
+function getLinearParams(dataMin, dataMax, funMin, funMax) {
+  const a = (dataMin - dataMax) / (funMin - funMax);
+  const b = dataMax - (a * funMax);
+  return [a, b];
+}
+
+// function align(referencePeakIntensity, referenceMin, toAlign) {
+//   const toAlignMin;
+//   const toAlignMax;
+
+//   function alignToPeakIntensity(desiredPeakIntensity) {
+//     const newMax = toAlignMin * desiredPeakIntensity;
+//     const diff = toAlignMax - toAlignMin;
+//     const newDiff = newMax - toAlignMin;
+
+//     return toAlign.map((curr) => {
+//       const ratio = (curr - toAlignMin) / diff;
+//       return toAlignMin + (ratio * newDiff);
+//     });
+//   }
+
+//   function alignToBase(dataToAlign) {
+//     return dataToAlign.map((curr) => {
+//       return (curr / toAlignMin) * referenceMin;
+//     });
+//   }
+  
+  
+//   const toPeak = alignToPeakIntensity(referencePeakIntensity, toAlignMin, toAlignMax);
+//   return alignToBase(toPeak, toAlignMin, referenceMin);
+// }

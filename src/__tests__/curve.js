@@ -130,3 +130,33 @@ describe('"Real-world" problems (noisy data)', () => {
     });
   });
 });
+
+describe('My test - aligning', () => {
+  function f(x) {
+    return 12 + 2 * Math.sin(2 * x);
+  }
+  const experimentalDataXs = Array.apply(null, Array(5)).map((x, index) => index / 10.0);
+  const experimentalDataYs = experimentalDataXs.map(x => f(x));
+  const data = {
+    x: experimentalDataXs,
+    y: experimentalDataYs
+  };
+  console.log('bazinga input: ' + JSON.stringify(data));
+  const theoreticalFun = ([a]) => (x) => {
+    return 2 + Math.sin(a * x);
+  };
+
+  test('find a function parameter', () => {
+    const options = {
+      damping: 0.01,
+      maxIterations: 200,
+      initialValues: [8.9],
+      alignToData: true,
+      errorTolerance: 1e-3,
+    };
+    const res = levenbergMarquardt(data, theoreticalFun, options);
+    console.log('bazinga ' + JSON.stringify(res));
+
+    expect(2 === 3).toBe(true);
+  });
+});
