@@ -132,31 +132,30 @@ describe('"Real-world" problems (noisy data)', () => {
 });
 
 describe('My test - aligning', () => {
+  const expectedA = 2;
   function f(x) {
-    return 12 + 2 * Math.sin(2 * x);
+    return 12 + 2 * Math.sin(expectedA * x);
   }
-  const experimentalDataXs = Array.apply(null, Array(5)).map((x, index) => index / 10.0);
-  const experimentalDataYs = experimentalDataXs.map(x => f(x));
+  const experimentalDataXs = Array(...Array(10)).map((x, index) => index / 10.0);
+  const experimentalDataYs = experimentalDataXs.map((x) => f(x));
   const data = {
     x: experimentalDataXs,
     y: experimentalDataYs
   };
-  console.log('bazinga input: ' + JSON.stringify(data));
   const theoreticalFun = ([a]) => (x) => {
-    return 2 + Math.sin(a * x);
+    return Math.sin(a * x);
   };
 
-  test('find a function parameter', () => {
+  it('find a function parameter', () => {
     const options = {
-      damping: 0.01,
-      maxIterations: 200,
-      initialValues: [8.9],
+      damping: 0.1,
+      maxIterations: 1200,
+      initialValues: [4.9],
       alignToData: true,
       errorTolerance: 1e-3,
     };
     const res = levenbergMarquardt(data, theoreticalFun, options);
-    console.log('bazinga ' + JSON.stringify(res));
 
-    expect(2 === 3).toBe(true);
+    expect(Math.abs(res.parameterValues - expectedA) < 0.00001).toBeDeepCloseTo(true);
   });
 });

@@ -28,7 +28,8 @@ export default function levenbergMarquardt(
     minValues,
     maxValues,
     initialValues,
-    alignToData = false
+    alignToData = false,
+    logAfterIteration = false
   } = options;
 
   if (damping <= 0) {
@@ -77,10 +78,9 @@ export default function levenbergMarquardt(
     // change: data.x.map()
     let alignedFun = parameterizedFunction;
     if (alignToData) {
-      const toAlign = data.x.map(x => parameterizedFunction(parameters)(x));
-      alignedFun = alignedFunction(parameterizedFunction, dataMin, dataMax, toAlign);  
+      const toAlign = data.x.map(parameterizedFunction(parameters));
+      alignedFun = alignedFunction(parameterizedFunction, dataMin, dataMax, toAlign);
     }
-    
 
     parameters = step(
       data,
@@ -99,6 +99,9 @@ export default function levenbergMarquardt(
 
     error = errorCalculation(data, parameters, alignedFun);
     if (isNaN(error)) break;
+    if (logAfterIteration) {
+      console.log(`error: ${error}, parameters: ${parameters}`); // eslint-disable-line no-console
+    }
     converged = error <= errorTolerance;
   }
 
@@ -118,7 +121,7 @@ function alignedFunction(f, dataMin, dataMax, toAlign) {
   const res = (paramsToFit) => (x) => {
     const originalRes = f(paramsToFit)(x);
     return params[0] * originalRes + params[1];
-  }
+  };
 
   return res;
 }
@@ -128,29 +131,3 @@ function getLinearParams(dataMin, dataMax, funMin, funMax) {
   const b = dataMax - (a * funMax);
   return [a, b];
 }
-
-// function align(referencePeakIntensity, referenceMin, toAlign) {
-//   const toAlignMin;
-//   const toAlignMax;
-
-//   function alignToPeakIntensity(desiredPeakIntensity) {
-//     const newMax = toAlignMin * desiredPeakIntensity;
-//     const diff = toAlignMax - toAlignMin;
-//     const newDiff = newMax - toAlignMin;
-
-//     return toAlign.map((curr) => {
-//       const ratio = (curr - toAlignMin) / diff;
-//       return toAlignMin + (ratio * newDiff);
-//     });
-//   }
-
-//   function alignToBase(dataToAlign) {
-//     return dataToAlign.map((curr) => {
-//       return (curr / toAlignMin) * referenceMin;
-//     });
-//   }
-  
-  
-//   const toPeak = alignToPeakIntensity(referencePeakIntensity, toAlignMin, toAlignMax);
-//   return alignToBase(toPeak, toAlignMin, referenceMin);
-// }

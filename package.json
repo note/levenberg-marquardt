@@ -1,6 +1,6 @@
 {
-  "name": "ml-levenberg-marquardt",
-  "version": "1.0.3",
+  "name": "@msitko/ml-levenberg-marquardt",
+  "version": "1.0.4",
   "description": "Curve fitting method in javascript",
   "main": "./lib/index.js",
   "module": "./src/index.js",
@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mljs/levenberg-marquardt.git"
+    "url": "https://github.com/note/levenberg-marquardt.git"
   },
   "keywords": [
     "machine",
@@ -34,10 +34,10 @@
   "author": "Miguel Asencio <maasencioh@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mljs/levenberg-marquardt/issues"
+    "url": "https://github.com/note/levenberg-marquardt/issues"
   },
   "runkitExampleFilename": "./runkit.js",
-  "homepage": "https://github.com/mljs/levenberg-marquardt#readme",
+  "homepage": "https://github.com/note/levenberg-marquardt#readme",
   "devDependencies": {
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
     "cz-conventional-changelog": "^2.1.0",
